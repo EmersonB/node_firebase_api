@@ -7,8 +7,6 @@ var firebase = require("firebase");
 var router = express.Router();
 var app = express();
 
-const gm_api_key = "AIzaSyDKxDdzzYAtOJDb-rgiJIRJy-w-Fcr1wOM";
-
 
 app.use(bodyParser.urlencoded());
 app.use(express.static(__dirname + '/'));
@@ -25,13 +23,13 @@ firebase.initializeApp({
 })
 
 var db = firebase.database();
-var ref = db.ref("ids");
+var ref = db.ref("employees");
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname+'/index.html');
 });
 
-router.route('/ids')
+router.route('/employees')
   .get(function(req,res){
     ref.on("value", function(snapshot) {
       console.log(snapshot.val());
@@ -41,9 +39,9 @@ router.route('/ids')
     });
   });
 
-router.route('/:device_id/route')
+router.route('/employee/:name')
   .get(function(req,res){
-    ref.child(req.params.device_id).child("route").on("value", function(snapshot) {
+    ref.child(req.params.name).on("value", function(snapshot) {
       console.log(snapshot.val());
       res.json(snapshot.val());
     }, function (errorObject) {
@@ -51,42 +49,17 @@ router.route('/:device_id/route')
     });
   })
   .post(function(req,res){
-    var usersRef = ref.child(req.params.device_id).child("route");
+    var usersRef = ref.child(req.params.name);
     usersRef.set({
-      start_lat: req.body.start.lat,
-      start_long: req.body.start.long,
-      end_lat: req.body.end.lat,
-      end_long: req.body.end.long
+      name: req.params.name,
+      age: req.body.age,
+      position: req.body.position
     });
   })
   .put(function(req, res){
 
   })
   .delete(function(req,res){
-    // var usersRef = ref.child(req.params.name);
-    // usersRef.set(null);
+    var usersRef = ref.child(req.params.name);
+    usersRef.set(null);
   });
-
-  router.route('/:device_id/location')
-    .get(function(req,res){
-      ref.child(req.params.device_id).child("location").on("value", function(snapshot) {
-        console.log(snapshot.val());
-        res.json(snapshot.val());
-      }, function (errorObject) {
-        console.log("The read failed: " + errorObject.code);
-      });
-    })
-    .post(function(req,res){
-      var usersRef = ref.child(req.params.device_id).child("location");
-      usersRef.set({
-          lat: req.body.lat,
-          long: req.body.long
-      });
-    })
-    .put(function(req, res){
-
-    })
-    .delete(function(req,res){
-      // var usersRef = ref.child(req.params.name);
-      // usersRef.set(null);
-    });
